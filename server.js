@@ -38,14 +38,19 @@ const tlsOptions = {
 };
 
 // ── Fuel Scraper ──────────────────────────────────────────
-async function fetchFuelPrices() {
+async function fetchFuelPrices(locationStr) {
+  const loc = locationStr || '04600-altenburg';
   const now = Date.now();
-  if (fuelCache && now - lastFuelFetch < 15 * 60 * 1000) return fuelCache;
+  // Nutze ein Cache-Objekt pro Location
+  if (!fuelCache) fuelCache = {};
+  if (fuelCache[loc] && now - (fuelCache[loc].lastFetch || 0) < 15 * 60 * 1000) {
+    return fuelCache[loc].data;
+  }
 
   const urls = {
-    diesel: 'https://ich-tanke.de/tankstellen/diesel/umkreis/04600-altenburg/',
-    e5: 'https://ich-tanke.de/tankstellen/super-e5/umkreis/04600-altenburg/',
-    e10: 'https://ich-tanke.de/tankstellen/super-e10/umkreis/04600-altenburg/'
+    diesel: `https://ich-tanke.de/tankstellen/diesel/umkreis/${loc}/`,
+    e5: `https://ich-tanke.de/tankstellen/super-e5/umkreis/${loc}/`,
+    e10: `https://ich-tanke.de/tankstellen/super-e10/umkreis/${loc}/`
   };
 
   const results = {};
@@ -74,8 +79,7 @@ async function fetchFuelPrices() {
     }
   }
 
-  fuelCache = results;
-  lastFuelFetch = now;
+  fuelCache[loc] = { data: results, lastFetch: now };
   return results;
 }
 
@@ -274,7 +278,8 @@ async function handleRequest(req, res) {
 
   if (pathname === '/api/fuel' && req.method === 'GET') {
     try {
-      const data = await fetchFuelPrices();
+      const loc = url.parse(req.url, true).query.loc || '04600-altenburg';
+      const data = await fetchFuelPrices(loc);
       res.writeHead(200, {'Content-Type':'application/json'});
       res.end(JSON.stringify(data));
     } catch (e) {

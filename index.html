@@ -397,6 +397,7 @@ input:checked+.slider:before{transform:translateX(17px);}
         <button class="tab" onclick="switchTab('layout')">🎛️ Layout</button>
         <button class="tab" onclick="switchTab('newsconfig')">📰 News</button>
         <button class="tab" onclick="switchTab('weather')">🌤️ Wetter</button>
+        <button class="tab" onclick="switchTab('fuel')">⛽ Sprit</button>
       </div>
 
       <!-- SCAN PANEL -->
@@ -459,6 +460,16 @@ input:checked+.slider:before{transform:translateX(17px);}
           </div>
         </div>
         <button onclick="saveWeatherConfig()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#238636;color:#fff;font-weight:600;cursor:pointer;margin-top:10px;">💾 Speichern</button>
+      </div>
+
+      <!-- FUEL PANEL -->
+      <div class="panel" id="panel-fuel">
+        <p style="font-size:12px;color:#8b949e;margin-bottom:15px;">Spritpreise werden von ich-tanke.de bezogen. Trage deine PLZ und den Ort in Kleinschreibung mit Bindestrich ein.</p>
+        <div class="form-field">
+          <label>PLZ-Ort</label>
+          <input type="text" id="f-location" placeholder="z.B. 04600-altenburg" />
+        </div>
+        <button onclick="saveFuelConfig()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#238636;color:#fff;font-weight:600;cursor:pointer;margin-top:10px;">💾 Speichern</button>
       </div>
 
       <!-- NEWS CONFIG PANEL -->
@@ -600,9 +611,28 @@ loadFuel();
 setInterval(loadFuel, 15 * 60000); // alle 15 Min
 
 // ─── FUEL PREISE ─────────────────────────────────────────
+function getFuelSettings() {
+  const saved = localStorage.getItem('neo-fuel-config');
+  if (saved) return JSON.parse(saved);
+  return { location: '04600-altenburg' };
+}
+
+function loadFuelSettingsForm() {
+  const conf = getFuelSettings();
+  document.getElementById('f-location').value = conf.location;
+}
+
+function saveFuelConfig() {
+  const loc = document.getElementById('f-location').value.trim().toLowerCase();
+  localStorage.setItem('neo-fuel-config', JSON.stringify({ location: loc || '04600-altenburg' }));
+  alert('Sprit-Einstellungen gespeichert!');
+  loadFuel();
+}
+
 async function loadFuel() {
   try {
-    const res = await fetch('/api/fuel');
+    const conf = getFuelSettings();
+    const res = await fetch('/api/fuel?loc=' + encodeURIComponent(conf.location));
     if (!res.ok) throw new Error('Network error');
     const data = await res.json();
     let html = '';
@@ -806,6 +836,7 @@ function switchTab(name){
   if(name==='layout')  renderLayoutTab();
   if(name==='newsconfig') loadAndRenderNewsSettings();
   if(name==='weather') loadWeatherSettingsForm();
+  if(name==='fuel') loadFuelSettingsForm();
 }
 
 // ── News Config ───────────────────────────────────────────
