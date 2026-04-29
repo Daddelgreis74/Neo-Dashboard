@@ -22,8 +22,8 @@ const CALENDAR_CONFIG= path.join(DIR, 'calendar.json');
 const LAYOUT_CONFIG  = path.join(DIR, 'layout.json');
 const NEWS_CONFIG    = path.join(DIR, 'news.json');
 
-// Pfad zur Abfall-Kalender Datei (.ics)
-const ICS_PATH       = process.env.ICS_PATH || '/home/daddelgreis74/abfall/Abfuhrkalender-Altenburg-2026.ics';
+// Pfad zur Abfall-Kalender Datei (.ics) lokal im Ordner
+const ICS_PATH       = path.join(DIR, 'abfallkalender.ics');
 // Optional: Pfad zur OpenClaw sessions.json für den Kontext-Balken
 // Wurde entfernt, da das Dashboard nun OpenClaw-unabhängig ist.
 
