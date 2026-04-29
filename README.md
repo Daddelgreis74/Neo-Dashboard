@@ -40,12 +40,12 @@ openssl req -nodes -new -x509 -keyout key.pem -out cert.pem -days 3650
 ### 4. Konfiguration (Umgebungsvariablen)
 Du kannst das Verhalten über Umgebungsvariablen anpassen (optional).
 * `PORT` (Standard: 8443)
-* `ICS_PATH` (Pfad zu deiner Abfallkalender `.ics` Datei)
-* `OPENCLAW_SESSIONS_PATH` (Pfad zur OpenClaw `sessions.json`, falls genutzt)
 
-**Beispiel Start mit Parametern:**
+*Die Einstellungen für Abfallkalender, Wetter und Spritpreise werden bequem über die Einstellungen (Zahnrad) im Dashboard selbst verwaltet.*
+
+**Beispiel Start mit abweichendem Port:**
 ```bash
-PORT=8443 ICS_PATH=/home/pi/abfall.ics node server.js
+PORT=9000 node server.js
 ```
 
 ### 5. Starten
