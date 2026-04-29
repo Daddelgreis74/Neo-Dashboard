@@ -12,7 +12,7 @@ const TILE_LABELS = {
   fuel:    '⛽ Benzinpreise'
 };
 
-let currentLayout = { order: ['weather','server','abfall','postit','news','tasmota','neo','calendar','fuel','voice'], visible: { weather:true, server:true, abfall:true, postit:true, news:true, tasmota:true, neo:true, calendar:true, fuel:true, voice:true } };
+let currentLayout = { order: ['weather','server','abfall','postit','news','tasmota','calendar','fuel'], visible: { weather:true, server:true, abfall:true, postit:true, news:true, tasmota:true, calendar:true, fuel:true } };
 let sortableInstance = null;
 
 // ── Laden vom Server ──────────────────────────────────────
