@@ -6,12 +6,10 @@ const TILE_LABELS = {
   server:  '🖥️ Server',
   abfall:  '🗑️ Abfuhrkalender',
   tasmota: '🔌 Tasmota',
-  neo:     '🤖 Neo Status',
   calendar: '📅 Eigene Termine',
   postit:  '📝 Notizen',
   news:    '📰 News',
-  fuel:    '⛽ Benzinpreise',
-  voice:   '🎙️ Neo Voice'
+  fuel:    '⛽ Benzinpreise'
 };
 
 let currentLayout = { order: ['weather','server','abfall','postit','news','tasmota','neo','calendar','fuel','voice'], visible: { weather:true, server:true, abfall:true, postit:true, news:true, tasmota:true, neo:true, calendar:true, fuel:true, voice:true } };

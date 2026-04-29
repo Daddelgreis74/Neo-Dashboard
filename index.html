@@ -305,19 +305,6 @@ input:checked+.slider:before{transform:translateX(17px);}
   <div class="cal-grid" id="cal-grid"></div>
 </div>
 
-<!-- ── NEO / OPENCLAW STATUS ── -->
-<div class="card" id="tile-neo">
-  <div class="card-title"><span class="tile-drag-handle">⠿</span>🤖 Neo Status</div>
-  <div class="ni"><span class="nl">Model</span><span class="nv" id="oc-model" style="font-size:10px">--</span></div>
-  <div class="ni"><span class="nl">Tokens In</span><span class="nv" id="oc-in">--</span></div>
-  <div class="ni"><span class="nl">Tokens Out</span><span class="nv" id="oc-out">--</span></div>
-  <div class="ni"><span class="nl">Cache gelesen</span><span class="nv" id="oc-cache">--</span></div>
-  <div class="ni"><span class="nl">Kosten (Session)</span><span class="nv grn" id="oc-cost">--</span></div>
-  <div class="ni"><span class="nl">Kontext</span><span class="nv" id="oc-ctx">--</span></div>
-  <div class="bar" style="margin-top:4px"><div class="bar-fill g" id="oc-ctx-bar" style="width:0%"></div></div>
-  <div style="font-size:10px;color:#7d8590;margin-top:6px" id="oc-updated"></div>
-</div>
-
 <!-- ── TASMOTA ── -->
 <div class="card" id="tile-tasmota">
   <div class="card-title"><span class="tile-drag-handle">⠿</span>🔌 Tasmota</div>
@@ -990,29 +977,6 @@ async function removeDevice(id,btn){
   await loadDevices();
   renderManageList();
 }
-</script>
-<script>
-async function loadNeoStatus(){
-  try{
-    const d=await fetch('/api/ocstatus').then(r=>r.json());
-    if(d.error){document.getElementById('oc-model').textContent='Fehler';return;}
-    document.getElementById('oc-model').textContent=d.model;
-    document.getElementById('oc-in').textContent=d.tokensIn;
-    document.getElementById('oc-out').textContent=d.tokensOut;
-    document.getElementById('oc-cache').textContent=d.cacheRead;
-    document.getElementById('oc-cost').textContent=d.cost;
-    document.getElementById('oc-ctx').textContent=d.totalTokens+' / '+d.contextMax+' ('+d.contextPct+'%)';
-    const bar=document.getElementById('oc-ctx-bar');
-    bar.style.width=d.contextPct+'%';
-    bar.className='bar-fill '+(d.contextPct>85?'r':d.contextPct>60?'y':'g');
-    if(d.updatedAt){
-      const t=new Date(d.updatedAt);
-      document.getElementById('oc-updated').textContent='Stand: '+t.toLocaleTimeString('de-DE');
-    }
-  }catch(e){console.error('Neo status error',e);}
-}
-loadNeoStatus();
-setInterval(loadNeoStatus,30000);
 </script>
 <div id="cal-overlay" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:110;align-items:center;justify-content:center;">
   <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;width:300px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);">

@@ -25,7 +25,7 @@ const NEWS_CONFIG    = path.join(DIR, 'news.json');
 // Pfad zur Abfall-Kalender Datei (.ics)
 const ICS_PATH       = process.env.ICS_PATH || '/home/daddelgreis74/abfall/Abfuhrkalender-Altenburg-2026.ics';
 // Optional: Pfad zur OpenClaw sessions.json für den Kontext-Balken
-const OPENCLAW_SESSIONS_PATH = process.env.OPENCLAW_SESSIONS_PATH || '/home/daddelgreis74/.openclaw/agents/main/sessions/sessions.json';
+// Wurde entfernt, da das Dashboard nun OpenClaw-unabhängig ist.
 
 const DEFAULT_LAYOUT = {
   order:   ['weather','server','abfall','tasmota','calendar','fuel'],
@@ -292,55 +292,6 @@ async function handleRequest(req, res) {
   if (pathname === '/api/stats' && req.method === 'GET') {
     res.writeHead(200, {'Content-Type':'application/json'});
     res.end(JSON.stringify(getStats())); return;
-  }
-
-  if (pathname === '/api/ocstatus' && req.method === 'GET') {
-    try {
-      if (!fs.existsSync(OPENCLAW_SESSIONS_PATH)) {
-         res.writeHead(200, {'Content-Type':'application/json'});
-         res.end(JSON.stringify({ tokens: 0, pct: 0, cost: 0 }));
-         return;
-      }
-      const sessions = JSON.parse(fs.readFileSync(OPENCLAW_SESSIONS_PATH, 'utf8'));
-      const main = sessions['agent:main:main'] || {};
-      const fmt = (n) => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
-      const ctxPct = main.contextTokens ? Math.round((main.totalTokens||0) / main.contextTokens * 100) : 0;
-      
-      // Calculate estimated cost manually based on Gemini pricing
-      let costVal = '?';
-      if (main.inputTokens !== undefined && main.outputTokens !== undefined) {
-          // Approximate pricing per 1M tokens (adjust to your actual model if needed)
-          // Using typical Gemini 1.5 Pro numbers: $1.25/1M input, $5.00/1M output, $0.30/1M cached
-          const cached = main.cacheRead || 0;
-          const input = Math.max(0, (main.inputTokens || 0) - cached);
-          const out = main.outputTokens || 0;
-          
-          let estCost = (input / 1000000 * 1.25) + (cached / 1000000 * 0.30) + (out / 1000000 * 5.00);
-          
-          // Try to use backend-provided cost first if it exists, otherwise use our calculated fallback
-          const finalCost = main.estimatedCostUsd !== undefined ? main.estimatedCostUsd : estCost;
-          if (finalCost !== undefined && !isNaN(finalCost)) {
-              costVal = '$' + finalCost.toFixed(4);
-          }
-      }
-
-      res.writeHead(200, {'Content-Type':'application/json'});
-      res.end(JSON.stringify({
-        model:      (main.model || '?').replace('anthropic/','').replace('google/',''),
-        tokensIn:   fmt(main.inputTokens  || 0),
-        tokensOut:  fmt(main.outputTokens || 0),
-        cacheRead:  fmt(main.cacheRead    || 0),
-        totalTokens: fmt(main.totalTokens || 0),
-        contextPct: ctxPct,
-        contextMax: fmt(main.contextTokens || 0),
-        cost: costVal,
-        updatedAt:  main.updatedAt || null,
-      }));
-    } catch(e) {
-      res.writeHead(200, {'Content-Type':'application/json'});
-      res.end(JSON.stringify({ error: e.message }));
-    }
-    return;
   }
 
   if (pathname === '/api/abfall' && req.method === 'GET') {
