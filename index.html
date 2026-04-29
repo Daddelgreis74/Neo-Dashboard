@@ -252,7 +252,7 @@ input:checked+.slider:before{transform:translateX(17px);}
 
 <!-- ── WEATHER ── -->
 <div class="card" id="tile-weather">
-  <div class="card-title"><span class="tile-drag-handle">⠿</span>🌤️ Wetter – Altenburg</div>
+  <div class="card-title"><span class="tile-drag-handle">⠿</span><span id="weather-title">🌤️ Wetter</span></div>
   <div id="weather-main">
     <div id="weather-icon">⏳</div>
     <div><div id="weather-temp">--°</div><div id="weather-desc">Laden...</div></div>
@@ -390,12 +390,13 @@ input:checked+.slider:before{transform:translateX(17px);}
     </div>
     <div id="modal-body">
 
-      <div class="tab-bar">
-        <button class="tab active" onclick="switchTab('scan')">🔍 Netzwerk-Scan</button>
+      <div class="tab-bar" style="flex-wrap:wrap; gap:4px;">
+        <button class="tab active" onclick="switchTab('scan')">🔍 Scan</button>
         <button class="tab" onclick="switchTab('manual')">➕ Manuell</button>
         <button class="tab" onclick="switchTab('devices')">📋 Geräte</button>
         <button class="tab" onclick="switchTab('layout')">🎛️ Layout</button>
         <button class="tab" onclick="switchTab('newsconfig')">📰 News</button>
+        <button class="tab" onclick="switchTab('weather')">🌤️ Wetter</button>
       </div>
 
       <!-- SCAN PANEL -->
@@ -438,6 +439,26 @@ input:checked+.slider:before{transform:translateX(17px);}
       <!-- DEVICES PANEL -->
       <div class="panel" id="panel-devices">
         <div id="devices-manage-list"><div style="color:#7d8590;font-size:12px">Lädt...</div></div>
+      </div>
+
+      <!-- WEATHER PANEL -->
+      <div class="panel" id="panel-weather">
+        <p style="font-size:12px;color:#8b949e;margin-bottom:15px;">Wetterdaten stammen von open-meteo.com. Trage hier deine Koordinaten ein.</p>
+        <div class="form-field">
+          <label>Ortsname</label>
+          <input type="text" id="w-city" placeholder="z.B. Berlin" />
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Breitengrad (Lat)</label>
+            <input type="text" id="w-lat" placeholder="52.52" />
+          </div>
+          <div class="form-field">
+            <label>Längengrad (Lon)</label>
+            <input type="text" id="w-lon" placeholder="13.40" />
+          </div>
+        </div>
+        <button onclick="saveWeatherConfig()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#238636;color:#fff;font-weight:600;cursor:pointer;margin-top:10px;">💾 Speichern</button>
       </div>
 
       <!-- NEWS CONFIG PANEL -->
@@ -636,9 +657,38 @@ async function loadFuel() {
 // ─── WEATHER ─────────────────────────────────────────────
 const WMO={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
 const DESC={0:'Klar',1:'Überwiegend klar',2:'Teilbewölkt',3:'Bewölkt',45:'Nebel',48:'Reifnebel',51:'Leichter Nieselregen',53:'Nieselregen',55:'Starker Nieselregen',61:'Leichter Regen',63:'Regen',65:'Starker Regen',71:'Leichter Schnee',73:'Schnee',75:'Starker Schnee',80:'Schauer',81:'Starke Schauer',82:'Heftige Schauer',95:'Gewitter',96:'Gewitter+Hagel',99:'Schwere Gewitter'};
+
+function getWeatherSettings() {
+  const saved = localStorage.getItem('neo-weather-config');
+  if (saved) return JSON.parse(saved);
+  return { city: 'Altenburg', lat: '50.985', lon: '12.433' };
+}
+
+function loadWeatherSettingsForm() {
+  const conf = getWeatherSettings();
+  document.getElementById('w-city').value = conf.city;
+  document.getElementById('w-lat').value = conf.lat;
+  document.getElementById('w-lon').value = conf.lon;
+}
+
+function saveWeatherConfig() {
+  const conf = {
+    city: document.getElementById('w-city').value.trim() || 'Altenburg',
+    lat: document.getElementById('w-lat').value.trim() || '50.985',
+    lon: document.getElementById('w-lon').value.trim() || '12.433'
+  };
+  localStorage.setItem('neo-weather-config', JSON.stringify(conf));
+  document.getElementById('weather-title').textContent = '🌤️ Wetter – ' + conf.city;
+  loadWeather();
+  alert('Wetter-Einstellungen gespeichert!');
+}
+
 async function loadWeather(){
   try{
-    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=50.985&longitude=12.433&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&daily=weather_code,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=Europe/Berlin&forecast_days=5');
+    const conf = getWeatherSettings();
+    document.getElementById('weather-title').textContent = '🌤️ Wetter – ' + conf.city;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${conf.lat}&longitude=${conf.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&daily=weather_code,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=Europe/Berlin&forecast_days=5`;
+    const r=await fetch(url);
     const d=await r.json();const c=d.current;
     document.getElementById('weather-icon').textContent=WMO[c.weather_code]||'🌡️';
     document.getElementById('weather-temp').textContent=`${Math.round(c.temperature_2m)}°C`;
@@ -755,6 +805,7 @@ function switchTab(name){
   if(name==='devices') renderManageList();
   if(name==='layout')  renderLayoutTab();
   if(name==='newsconfig') loadAndRenderNewsSettings();
+  if(name==='weather') loadWeatherSettingsForm();
 }
 
 // ── News Config ───────────────────────────────────────────
