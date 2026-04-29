@@ -24,7 +24,7 @@ Keine externen Frameworks, keine Datenbank.
 
 ### 2. Projekt klonen & Abhängigkeiten installieren
 ```bash
-git clone https://github.com/DeinNutzername/DeinRepoName.git dashboard
+git clone https://github.com/Daddelgreis74/Neo-Dashboard.git dashboard
 cd dashboard
 npm install
 ```
