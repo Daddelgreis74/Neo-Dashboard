@@ -136,7 +136,7 @@ function saveCalendar(data) { fs.writeFileSync(CALENDAR_CONFIG, JSON.stringify(d
 const DEFAULT_FEEDS = [
   { url: 'https://www.heise.de/rss/heise-atom.xml', source: 'heise online' },
   { url: 'https://stadt-bremerhaven.de/feed/', source: 'Caschys Blog' },
-  { url: 'https://www.tagesschau.de/inland/regional/thueringen/index~rss2.xml', source: 'Tagesschau TH' }
+  { url: 'https://www.tagesschau.de/xml/rss2', source: 'Tagesschau' }
 ];
 function loadNewsConfig() {
   try { return JSON.parse(fs.readFileSync(NEWS_CONFIG, 'utf8')); } catch { return DEFAULT_FEEDS; }
