@@ -1,0 +1,9 @@
+node_modules/
+cert.pem
+key.pem
+calendar.json
+layout.json
+news.json
+tasmota.json
+server.log
+.DS_Store

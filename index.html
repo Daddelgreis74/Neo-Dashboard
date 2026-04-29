@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Neo Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#0d1117;color:#e6edf3;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  height:100vh;overflow:hidden;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:10px;padding:10px;
+}
+.card{
+  background:#161b22;border:1px solid #30363d;
+  border-radius:12px;padding:16px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.card-title{
+  font-size:11px;text-transform:uppercase;letter-spacing:1px;
+  color:#7d8590;margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+
+/* ── CLOCK ── */
+#clock-card{
+  grid-column:1/5;flex-direction:row;
+  align-items:center;justify-content:space-between;padding:10px 20px;
+}
+#time{font-size:50px;font-weight:200;letter-spacing:4px;color:#58a6ff;line-height:1;}
+#clock-center{display:flex;flex-direction:column;align-items:center;gap:4px;}
+#day{font-size:26px;font-weight:300;}
+#date{font-size:16px;color:#8b949e;}
+#gear-btn{
+  background:none;border:none;color:#7d8590;cursor:pointer;
+  font-size:28px;padding:8px;border-radius:8px;line-height:1;
+  transition:color .2s,transform .3s;
+}
+#gear-btn:hover{color:#58a6ff;transform:rotate(45deg);}
+
+/* ── WEATHER ── */
+#weather-main{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+#weather-icon{font-size:40px;}
+#weather-temp{font-size:36px;font-weight:300;}
+#weather-desc{font-size:12px;color:#8b949e;margin-top:2px;}
+.weather-detail{font-size:11px;color:#7d8590;margin-top:4px;}
+#weather-forecast{margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;}
+.fi{background:#0d1117;border-radius:8px;padding:6px 8px;font-size:10px;color:#8b949e;text-align:center;flex:1;}
+.fi-icon{font-size:15px;}.fi-temp{color:#e6edf3;font-size:11px;}
+
+/* ── PROGRESS ── */
+.stat-item{margin-bottom:11px;}
+.stat-label{font-size:11px;color:#7d8590;margin-bottom:3px;display:flex;justify-content:space-between;}
+.stat-value{font-size:12px;color:#58a6ff;font-weight:600;}
+.bar{background:#21262d;border-radius:4px;height:6px;overflow:hidden;margin-top:3px;}
+.bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.g{background:#3fb950;}.y{background:#d29922;}.r{background:#f85149;}
+
+/* ── ABFALL KALENDER ── */
+#tile-abfall{overflow:auto;}
+#cal-month{font-size:15px;font-weight:500;margin-bottom:10px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;}
+.cdh{font-size:10px;color:#7d8590;padding:3px 0;font-weight:600;}
+.cd{font-size:11px;padding:4px 2px;border-radius:5px;position:relative;cursor:default;}
+.cd.today{background:#58a6ff;color:#0d1117;font-weight:700;}
+.cd.om{color:#30363d;}
+.cd-dots{display:flex;justify-content:center;gap:2px;margin-top:2px;flex-wrap:wrap;}
+.dot-rm{background:#f85149;width:5px;height:5px;border-radius:50%;}
+.dot-bt{background:#3fb950;width:5px;height:5px;border-radius:50%;}
+.dot-pt{background:#58a6ff;width:5px;height:5px;border-radius:50%;}
+.dot-gs{background:#d29922;width:5px;height:5px;border-radius:50%;}
+.dot-sm{background:#a371f7;width:5px;height:5px;border-radius:50%;}
+.ab-next{margin-bottom:10px;}
+.ab-next-item{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;
+  background:#0d1117;border-radius:8px;margin-bottom:5px;font-size:12px;
+}
+.ab-next-icon{font-size:18px;}
+.ab-next-name{font-weight:600;flex:1;}
+.ab-next-days{font-size:11px;padding:2px 7px;border-radius:10px;font-weight:700;}
+.days-soon{background:#f85149;color:#fff;}
+.days-near{background:#d29922;color:#0d1117;}
+.days-ok{background:#21262d;color:#8b949e;}
+
+/* ── DISK ── */
+.disk-i{margin-bottom:7px;}
+.disk-p{font-size:11px;color:#7d8590;display:flex;justify-content:space-between;}
+
+/* ── NET/SYSTEM ── */
+.ni{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #21262d;font-size:12px;}
+.ni:last-child{border-bottom:none;}
+.nl{color:#7d8590;font-size:11px;}
+.nv{color:#e6edf3;font-weight:500;}
+.nv.grn{color:#3fb950;}
+.dot{width:7px;height:7px;border-radius:50%;background:#3fb950;display:inline-block;margin-right:5px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── TASMOTA WIDGET ── */
+#tile-tasmota{overflow:auto;}
+.tas-dev{background:#0d1117;border:1px solid #30363d;border-radius:9px;padding:9px 11px;margin-bottom:7px;}
+.tas-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.tas-name{font-size:13px;font-weight:600;}
+.tas-ip{font-size:10px;color:#7d8590;}
+.tas-offline{color:#f85149;font-size:10px;}
+.tas-chs{display:flex;flex-direction:column;gap:4px;}
+.tas-ch{display:flex;align-items:center;justify-content:space-between;font-size:12px;}
+.tas-chl{color:#8b949e;}
+.toggle{position:relative;display:inline-block;width:38px;height:21px;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;inset:0;background:#30363d;border-radius:21px;transition:.3s;}
+.slider:before{position:absolute;content:"";height:15px;width:15px;left:3px;bottom:3px;background:#e6edf3;border-radius:50%;transition:.3s;}
+input:checked+.slider{background:#3fb950;}
+input:checked+.slider:before{transform:translateX(17px);}
+.tas-del{background:none;border:none;color:#f85149;cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;opacity:.6;transition:opacity .2s;}
+.tas-del:hover{opacity:1;}
+.empty-hint{color:#7d8590;font-size:12px;text-align:center;margin-top:12px;}
+
+/* ── NEWS WIDGET ── */
+.news-container {
+  height:250px;overflow:hidden;position:relative;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image:linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+.ticker-track {
+  display:flex;flex-direction:column;gap:8px;padding-top:5px;
+  animation:scrollTicker 30s linear infinite;
+}
+.news-container:hover .ticker-track { animation-play-state:paused; }
+@keyframes scrollTicker { 0% {transform:translateY(0);} 100% {transform:translateY(calc(-50% - 4px));} }
+.news-item {
+  background:#0d1117;border:1px solid #30363d;border-radius:8px;
+  padding:10px 12px;transition:border-color .2s;text-decoration:none;display:block;
+}
+.news-item:hover { border-color:#58a6ff; }
+.news-source { font-size:10px;color:#7d8590;margin-bottom:4px;display:flex;justify-content:space-between; }
+.news-source span.time { color:#3fb950; }
+.news-headline {
+  font-size:13px;font-weight:600;color:#e6edf3;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ════════════════════════════════════════════
+   SETTINGS MODAL
+════════════════════════════════════════════ */
+#overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.65);z-index:100;
+  align-items:center;justify-content:center;
+}
+#overlay.open{display:flex;}
+#modal{
+  background:#161b22;border:1px solid #30363d;border-radius:16px;
+  width:520px;max-height:80vh;display:flex;flex-direction:column;
+  overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+#modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid #30363d;
+}
+#modal-header h2{font-size:16px;font-weight:600;}
+#modal-close{background:none;border:none;color:#7d8590;cursor:pointer;font-size:20px;line-height:1;}
+#modal-close:hover{color:#e6edf3;}
+#modal-body{overflow-y:auto;padding:16px 20px;flex:1;}
+
+.tab-bar{display:flex;gap:4px;margin-bottom:14px;}
+.tab{
+  padding:6px 14px;border:none;border-radius:8px;cursor:pointer;
+  font-size:12px;font-weight:600;background:#21262d;color:#8b949e;
+  transition:background .2s,color .2s;
+}
+.tab.active{background:#58a6ff;color:#0d1117;}
+
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* scan */
+#scan-btn{
+  width:100%;padding:10px;border:none;border-radius:8px;
+  background:#238636;color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+  transition:opacity .2s;margin-bottom:10px;
+}
+#scan-btn:hover{opacity:.85;}
+#scan-btn:disabled{opacity:.5;cursor:not-allowed;}
+#scan-status{font-size:11px;color:#7d8590;margin-bottom:8px;min-height:16px;}
+#scan-results{display:flex;flex-direction:column;gap:6px;}
+.sr-item{
+  background:#0d1117;border:1px solid #30363d;border-radius:8px;
+  padding:9px 12px;display:flex;align-items:center;justify-content:space-between;
+}
+.sr-info .sr-name{font-size:13px;font-weight:600;}
+.sr-info .sr-ip{font-size:11px;color:#7d8590;}
+.sr-add{
+  padding:5px 12px;border:none;border-radius:6px;
+  background:#238636;color:#fff;font-size:11px;font-weight:600;cursor:pointer;
+}
+.sr-add:disabled{background:#30363d;color:#7d8590;cursor:not-allowed;}
+
+/* manual add */
+.form-field{margin-bottom:10px;}
+.form-field label{display:block;font-size:11px;color:#7d8590;margin-bottom:4px;}
+.form-field input{
+  width:100%;padding:7px 10px;background:#21262d;border:1px solid #30363d;
+  border-radius:7px;color:#e6edf3;font-size:13px;outline:none;
+}
+.form-field input:focus{border-color:#58a6ff;}
+.form-row{display:flex;gap:8px;}
+.form-row .form-field{flex:1;}
+#add-btn{
+  width:100%;padding:9px;border:none;border-radius:8px;
+  background:#58a6ff;color:#0d1117;font-size:13px;font-weight:600;cursor:pointer;
+}
+#add-btn:hover{opacity:.85;}
+
+/* devices manage */
+.dev-item{
+  background:#0d1117;border:1px solid #30363d;border-radius:8px;
+  padding:9px 12px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;
+}
+.dev-item-info .dev-item-name{font-size:13px;font-weight:600;}
+.dev-item-info .dev-item-ip{font-size:11px;color:#7d8590;}
+.btn-del{
+  padding:5px 10px;border:none;border-radius:6px;
+  background:#21262d;color:#f85149;font-size:11px;font-weight:600;cursor:pointer;
+}
+.btn-del:hover{background:#f85149;color:#fff;}
+/* ── DRAG & DROP ── */
+.drag-ghost{opacity:.4;background:#21262d;}
+.drag-chosen{box-shadow:0 0 0 2px #58a6ff;}
+.tile-drag-handle{
+  display:inline-block;cursor:grab;color:#30363d;
+  font-size:14px;margin-right:6px;user-select:none;
+  transition:color .2s;
+}
+.tile-drag-handle:hover{color:#7d8590;}
+</style>
+</head>
+<body id="tile-grid">
+
+<!-- ── CLOCK / HEADER ── -->
+<div class="card" id="clock-card">
+  <div id="time">--:--:--</div>
+  <div id="clock-center">
+    <div id="day">...</div>
+    <div id="date">...</div>
+  </div>
+  <button id="gear-btn" onclick="openSettings()" title="Einstellungen">⚙️</button>
+</div>
+
+<!-- ── WEATHER ── -->
+<div class="card" id="tile-weather">
+  <div class="card-title"><span class="tile-drag-handle">⠿</span>🌤️ Wetter – Altenburg</div>
+  <div id="weather-main">
+    <div id="weather-icon">⏳</div>
+    <div><div id="weather-temp">--°</div><div id="weather-desc">Laden...</div></div>
+  </div>
+  <div class="weather-detail" id="weather-details"></div>
+  <div id="weather-forecast"></div>
+</div>
+
+<!-- ── SERVER (Stats + Disk + System kombiniert) ── -->
+<div class="card" id="tile-server" style="overflow-y:auto;">
+  <div class="card-title"><span class="tile-drag-handle">⠿</span>🖥️ Server</div>
+
+  <div class="stat-item">
+    <div class="stat-label"><span>CPU</span><span class="stat-value" id="cpu-val">--%</span></div>
+    <div class="bar"><div class="bar-fill g" id="cpu-bar" style="width:0%"></div></div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label"><span>RAM</span><span class="stat-value" id="ram-val">--</span></div>
+    <div class="bar"><div class="bar-fill g" id="ram-bar" style="width:0%"></div></div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label"><span>Swap</span><span class="stat-value" id="swap-val">--</span></div>
+    <div class="bar"><div class="bar-fill y" id="swap-bar" style="width:0%"></div></div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label"><span>Load Avg</span><span class="stat-value" id="load-val">--</span></div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid #21262d;margin:8px 0;">
+
+  <div id="disk-content" style="margin-bottom:8px;"><div style="color:#7d8590;font-size:11px">Laden...</div></div>
+
+  <hr style="border:none;border-top:1px solid #21262d;margin:8px 0;">
+
+  <div class="ni"><span class="nl"><span class="dot"></span>Uptime</span><span class="nv grn" id="uptime-val">--</span></div>
+  <div class="ni"><span class="nl">Hostname</span><span class="nv" id="hostname-val">--</span></div>
+  <div class="ni"><span class="nl">IP</span><span class="nv" id="ip-val">--</span></div>
+  <div class="ni"><span class="nl">CPU Temp</span><span class="nv" id="temp-val">--</span></div>
+  <div class="ni"><span class="nl">Prozesse</span><span class="nv" id="proc-val">--</span></div>
+  <div class="ni"><span class="nl">Update</span><span class="nv" id="last-update" style="font-size:10px">--</span></div>
+  <div class="ni"><span class="nl">Tasmota</span><span class="nv" id="tas-count">0 Geräte</span></div>
+  <div class="ni"><span class="nl">URL</span><span class="nv" id="dash-url" style="font-size:9px">--</span></div>
+</div>
+
+<!-- ── ABFALL KALENDER ── -->
+<div class="card" id="tile-abfall">
+  <div class="card-title"><span class="tile-drag-handle">⠿</span>🗑️ Abfuhrkalender</div>
+  <div class="ab-next" id="ab-next"></div>
+  <div id="cal-month">...</div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<!-- ── NEO / OPENCLAW STATUS ── -->
+<div class="card" id="tile-neo">
+  <div class="card-title"><span class="tile-drag-handle">⠿</span>🤖 Neo Status</div>
+  <div class="ni"><span class="nl">Model</span><span class="nv" id="oc-model" style="font-size:10px">--</span></div>
+  <div class="ni"><span class="nl">Tokens In</span><span class="nv" id="oc-in">--</span></div>
+  <div class="ni"><span class="nl">Tokens Out</span><span class="nv" id="oc-out">--</span></div>
+  <div class="ni"><span class="nl">Cache gelesen</span><span class="nv" id="oc-cache">--</span></div>
+  <div class="ni"><span class="nl">Kosten (Session)</span><span class="nv grn" id="oc-cost">--</span></div>
+  <div class="ni"><span class="nl">Kontext</span><span class="nv" id="oc-ctx">--</span></div>
+  <div class="bar" style="margin-top:4px"><div class="bar-fill g" id="oc-ctx-bar" style="width:0%"></div></div>
+  <div style="font-size:10px;color:#7d8590;margin-top:6px" id="oc-updated"></div>
+</div>
+
+<!-- ── TASMOTA ── -->
+<div class="card" id="tile-tasmota">
+  <div class="card-title"><span class="tile-drag-handle">⠿</span>🔌 Tasmota</div>
+  <div id="device-list"><div class="empty-hint">Geräte über ⚙️ hinzufügen</div></div>
+</div>
+
+<!-- ── EIGENER KALENDER ── -->
+<div class="card" id="tile-calendar">
+  <div class="card-title" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:6px;"><span class="tile-drag-handle">⠿</span>📅 Eigene Termine</div>
+    <button onclick="openCalModal()" style="background:none;border:none;color:#58a6ff;cursor:pointer;font-size:16px;line-height:1;padding:0 5px;" title="Neuer Termin">+</button>
+  </div>
+  <div id="calendar-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:5px;"></div>
+</div>
+
+<!-- ── POST-IT NOTIZ ── -->
+<div class="card" id="tile-postit">
+  <div class="card-title">
+    <span class="tile-drag-handle">⠿</span>📝 Notizen
+  </div>
+  <textarea id="postit-text" placeholder="Tippe hier..." style="flex:1; width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:#e6edf3; font-family:inherit; font-size:13px; resize:none; outline:none; line-height:1.5;"></textarea>
+</div>
+
+<!-- ── FUEL PREISE ── -->
+<div class="card" id="tile-fuel">
+  <div class="card-title"><span class="tile-drag-handle">⠿</span>⛽ Benzinpreise</div>
+  <div id="fuel-content" style="margin-top:10px; display:flex; flex-direction:column; gap:8px; font-size:13px;">
+    Laden...
+  </div>
+</div>
+
+<!-- ── NEWS TICKER ── -->
+<div class="card" id="tile-news" style="grid-column: span 2;">
+  <div class="card-title">
+    <span class="tile-drag-handle">⠿</span>📰 Tech & Lokal News
+  </div>
+  <div class="news-container">
+    <div class="ticker-track" id="news-track">
+      <div style="color:#7d8590;font-size:12px;text-align:center;margin-top:20px;">Laden...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     NEWS MODAL
+════════════════════════════════════════════ -->
+<div id="news-overlay" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:110;align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;width:380px;display:flex;flex-direction:column;gap:15px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span id="news-modal-source" style="font-size:11px;color:#3fb950;font-weight:600;text-transform:uppercase;"></span>
+      <span id="news-modal-time" style="font-size:11px;color:#7d8590;"></span>
+    </div>
+    <h3 id="news-modal-title" style="color:#e6edf3;font-size:15px;margin:0;line-height:1.4;"></h3>
+    <div id="news-modal-snippet" style="color:#8b949e;font-size:13px;line-height:1.5;max-height:150px;overflow-y:auto;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:5px;">
+      <button onclick="document.getElementById('news-overlay').style.display='none'" style="padding:8px 12px;border:none;background:#21262d;color:#8b949e;border-radius:6px;cursor:pointer;font-weight:600;">Schließen</button>
+      <a id="news-modal-link" href="#" target="_blank" style="padding:8px 12px;border:none;background:#58a6ff;color:#0d1117;border-radius:6px;cursor:pointer;text-decoration:none;font-weight:600;font-size:13px;">Ganzen Artikel lesen ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SETTINGS MODAL
+════════════════════════════════════════════ -->
+<div id="overlay" onclick="overlayClick(event)">
+  <div id="modal">
+    <div id="modal-header">
+      <h2>⚙️ Einstellungen</h2>
+      <button id="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div id="modal-body">
+
+      <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('scan')">🔍 Netzwerk-Scan</button>
+        <button class="tab" onclick="switchTab('manual')">➕ Manuell</button>
+        <button class="tab" onclick="switchTab('devices')">📋 Geräte</button>
+        <button class="tab" onclick="switchTab('layout')">🎛️ Layout</button>
+        <button class="tab" onclick="switchTab('newsconfig')">📰 News</button>
+      </div>
+
+      <!-- SCAN PANEL -->
+      <div class="panel active" id="panel-scan">
+        <button id="scan-btn" onclick="startScan()">🔍 Netzwerk scannen (192.168.x.0/24)</button>
+        <div id="scan-status"></div>
+        <div id="scan-results"></div>
+      </div>
+
+      <!-- MANUAL PANEL -->
+      <div class="panel" id="panel-manual">
+        <div class="form-field">
+          <label>Name</label>
+          <input type="text" id="f-name" placeholder="z.B. Stehlampe" />
+        </div>
+        <div class="form-field">
+          <label>IP-Adresse</label>
+          <input type="text" id="f-ip" placeholder="z.B. 192.168.178.50" />
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Kanäle</label>
+            <input type="number" id="f-ch" value="1" min="1" max="8" />
+          </div>
+          <div class="form-field">
+            <label>Benutzer (opt.)</label>
+            <input type="text" id="f-user" placeholder="admin" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Passwort (opt.)</label>
+          <input type="password" id="f-pass" placeholder="••••••••" />
+        </div>
+        <button id="add-btn" onclick="manualAdd()">✅ Gerät hinzufügen</button>
+      </div>
+
+      <!-- LAYOUT PANEL -->
+      <div class="panel" id="panel-layout"></div>
+
+      <!-- DEVICES PANEL -->
+      <div class="panel" id="panel-devices">
+        <div id="devices-manage-list"><div style="color:#7d8590;font-size:12px">Lädt...</div></div>
+      </div>
+
+      <!-- NEWS CONFIG PANEL -->
+      <div class="panel" id="panel-newsconfig">
+        <p style="font-size:12px;color:#7d8590;margin-bottom:12px;">RSS-Feeds eintragen und verwalten. (Max. 3-4 empfohlen für gute Übersicht)</p>
+        <div class="form-row">
+          <div class="form-field" style="flex:1;"><label>Feed-Name</label><input type="text" id="news-name" placeholder="z.B. Caschys Blog" /></div>
+          <div class="form-field" style="flex:2;"><label>RSS-URL</label><input type="text" id="news-url" placeholder="https://..." /></div>
+        </div>
+        <button id="add-news-btn" onclick="addNewsFeed()" style="width:100%;background:#238636;color:#fff;font-size:13px;font-weight:600;cursor:pointer;padding:8px;border-radius:6px;border:none;margin-bottom:12px;">✅ Feed hinzufügen</button>
+        <div id="news-manage-list"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CLOCK ───────────────────────────────────────────────
+const DAYS=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function updateClock(){
+  const n=new Date();
+  document.getElementById('time').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
+  document.getElementById('day').textContent=DAYS[n.getDay()];
+  document.getElementById('date').textContent=`${n.getDate()}. ${MONTHS[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(updateClock,1000);updateClock();
+
+// ─── ABFALL KALENDER ─────────────────────────────────────
+let abfallEvents = [];
+
+const ABFALL_ICONS = {
+  restmuell:   { icon:'🗑️', cls:'dot-rm', label:'Restmüll' },
+  biotonne:    { icon:'♻️', cls:'dot-bt', label:'Biotonne' },
+  papiertonne: { icon:'📰', cls:'dot-pt', label:'Papiertonne' },
+  gelber_sack: { icon:'🛍️', cls:'dot-gs', label:'Gelber Sack' },
+  schadstoff:  { icon:'☢️', cls:'dot-sm', label:'Schadstoffmobil' },
+  sonstig:     { icon:'📋', cls:'dot-sm', label:'Sonstiges' },
+};
+
+async function loadAbfall() {
+  try {
+    abfallEvents = await fetch('/api/abfall').then(r=>r.json());
+    buildAbfallCalendar();
+    buildNextAbfall();
+  } catch(e) { console.error('Abfall error', e); }
+}
+
+function buildNextAbfall() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const el = document.getElementById('ab-next');
+  // get next unique types upcoming
+  const seen = new Set();
+  const upcoming = [];
+  for (const ev of abfallEvents) {
+    const d = new Date(ev.date + 'T00:00:00');
+    if (d < today) continue;
+    if (!seen.has(ev.type)) {
+      const diffMs = d - today;
+      const days = Math.round(diffMs / 86400000);
+      upcoming.push({ ...ev, days, d });
+      seen.add(ev.type);
+    }
+    if (seen.size >= 4) break;
+  }
+  // sort by date
+  upcoming.sort((a,b)=>a.d-b.d);
+  el.innerHTML = '';
+  upcoming.forEach(ev => {
+    const info = ABFALL_ICONS[ev.type] || ABFALL_ICONS.sonstig;
+    const daysTxt = ev.days === 0 ? 'Heute!' : ev.days === 1 ? 'Morgen' : `in ${ev.days} Tagen`;
+    const daysCls = ev.days <= 1 ? 'days-soon' : ev.days <= 3 ? 'days-near' : 'days-ok';
+    const d = ev.d;
+    const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.`;
+    const item = document.createElement('div');
+    item.className = 'ab-next-item';
+    item.innerHTML = `<span class="ab-next-icon">${info.icon}</span><span class="ab-next-name">${info.label}</span><span style="font-size:11px;color:#7d8590">${dateStr}</span><span class="ab-next-days ${daysCls}">${daysTxt}</span>`;
+    el.appendChild(item);
+  });
+}
+
+function buildAbfallCalendar() {
+  const now=new Date(), year=now.getFullYear(), month=now.getMonth(), today=now.getDate();
+  document.getElementById('cal-month').textContent=`${MONTHS[month]} ${year}`;
+  // build date→types map for this month
+  const map = {};
+  abfallEvents.forEach(ev => {
+    const d = new Date(ev.date + 'T00:00:00');
+    if (d.getFullYear()===year && d.getMonth()===month) {
+      const k = d.getDate();
+      if (!map[k]) map[k] = [];
+      map[k].push(ev.type);
+    }
+  });
+  const g=document.getElementById('cal-grid'); g.innerHTML='';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(d=>{const e=document.createElement('div');e.className='cdh';e.textContent=d;g.appendChild(e);});
+  const fd=new Date(year,month,1).getDay(), off=fd===0?6:fd-1;
+  const dim=new Date(year,month+1,0).getDate(), prev=new Date(year,month,0).getDate();
+  for(let i=off-1;i>=0;i--){const e=document.createElement('div');e.className='cd om';e.textContent=prev-i;g.appendChild(e);}
+  for(let d=1;d<=dim;d++){
+    const e=document.createElement('div');
+    e.className='cd'+(d===today?' today':'');
+    e.textContent=d;
+    if (map[d] && map[d].length) {
+      const dots=document.createElement('div'); dots.className='cd-dots';
+      map[d].forEach(type=>{ const dot=document.createElement('div'); dot.className=(ABFALL_ICONS[type]||ABFALL_ICONS.sonstig).cls; dots.appendChild(dot); });
+      e.appendChild(dots);
+    }
+    g.appendChild(e);
+  }
+}
+
+loadAbfall();
+setInterval(loadAbfall, 3600000); // stündlich neu laden
+loadFuel();
+setInterval(loadFuel, 15 * 60000); // alle 15 Min
+
+// ─── FUEL PREISE ─────────────────────────────────────────
+async function loadFuel() {
+  try {
+    const res = await fetch('/api/fuel');
+    if (!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    let html = '';
+    
+    const logos = {
+      'jet': '/img/jet.png',
+      'shell': '/img/shell.png',
+      'esso': '/img/esso.png',
+      'totalenergies': '/img/totalenergies.png',
+      'aral': '/img/aral.png',
+      'agip eni': '/img/agip.png'
+    };
+
+    function getLogo(name) {
+      const n = name.toLowerCase();
+      for (const [key, url] of Object.entries(logos)) {
+        if (n.includes(key)) return `<img src="${url}" alt="${name}" style="height:14px; width:auto; vertical-align:middle; margin-right:6px; border-radius:2px; background:#fff; padding:1px;">`;
+      }
+      return '<span style="font-size:14px; margin-right:4px;">⛽</span>';
+    }
+
+    // Wir zeigen die Top 2-3 für jede Sorte
+    const types = [
+      { key: 'e5', label: 'Super E5', color: '#ffb86c' },
+      { key: 'e10', label: 'Super E10', color: '#50fa7b' },
+      { key: 'diesel', label: 'Diesel', color: '#ff79c6' }
+    ];
+
+    for (const t of types) {
+      if (data[t.key] && data[t.key].length > 0) {
+        html += `<div style="margin-bottom:8px;">`;
+        html += `<strong style="color:${t.color};">${t.label}</strong><br>`;
+        data[t.key].forEach(st => {
+          html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="color:#c9d1d9; display:flex; align-items:center;">
+              ${getLogo(st.name)}
+              ${st.name} <small style="color:#8b949e; margin-left:4px;">(${st.street.split(' ')[0]})</small>
+            </span>
+            <strong style="color:#fff;">${st.price}€</strong>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+    }
+    
+    document.getElementById('fuel-content').innerHTML = html || 'Keine Daten gefunden.';
+  } catch (e) {
+    document.getElementById('fuel-content').innerHTML = `<span style="color:#ff7b72;">Fehler: ${e.message}</span>`;
+  }
+}
+
+// ─── WEATHER ─────────────────────────────────────────────
+const WMO={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const DESC={0:'Klar',1:'Überwiegend klar',2:'Teilbewölkt',3:'Bewölkt',45:'Nebel',48:'Reifnebel',51:'Leichter Nieselregen',53:'Nieselregen',55:'Starker Nieselregen',61:'Leichter Regen',63:'Regen',65:'Starker Regen',71:'Leichter Schnee',73:'Schnee',75:'Starker Schnee',80:'Schauer',81:'Starke Schauer',82:'Heftige Schauer',95:'Gewitter',96:'Gewitter+Hagel',99:'Schwere Gewitter'};
+async function loadWeather(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=50.985&longitude=12.433&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&daily=weather_code,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=Europe/Berlin&forecast_days=5');
+    const d=await r.json();const c=d.current;
+    document.getElementById('weather-icon').textContent=WMO[c.weather_code]||'🌡️';
+    document.getElementById('weather-temp').textContent=`${Math.round(c.temperature_2m)}°C`;
+    document.getElementById('weather-desc').textContent=DESC[c.weather_code]||'Unbekannt';
+    document.getElementById('weather-details').textContent=`Gefühlt ${Math.round(c.apparent_temperature)}°C · 💧${c.relative_humidity_2m}% · 💨${Math.round(c.wind_speed_10m)} km/h`;
+    const fe=document.getElementById('weather-forecast');fe.innerHTML='';
+    const dn=['So','Mo','Di','Mi','Do','Fr','Sa'];
+    for(let i=1;i<5;i++){
+      const day=new Date(d.daily.time[i]);
+      const el=document.createElement('div');el.className='fi';
+      el.innerHTML=`<div>${dn[day.getDay()]}</div><div class="fi-icon">${WMO[d.daily.weather_code[i]]||'?'}</div><div class="fi-temp">${Math.round(d.daily.temperature_2m_max[i])}°/${Math.round(d.daily.temperature_2m_min[i])}°</div>`;
+      fe.appendChild(el);
+    }
+  }catch{document.getElementById('weather-desc').textContent='Keine Verbindung';}
+}
+loadWeather();setInterval(loadWeather,600000);
+
+// ─── SERVER STATS ─────────────────────────────────────────
+function setBar(id,pct){const b=document.getElementById(id);b.style.width=pct+'%';b.className='bar-fill '+(pct>85?'r':pct>60?'y':'g');}
+async function loadStats(){
+  try{
+    const d=await fetch('/api/stats').then(r=>r.json());
+    document.getElementById('cpu-val').textContent=d.cpu.usage+'%';setBar('cpu-bar',d.cpu.usage);
+    const rp=Math.round(d.ram.used/d.ram.total*100);
+    document.getElementById('ram-val').textContent=`${d.ram.usedGB}/${d.ram.totalGB}GB (${rp}%)`;setBar('ram-bar',rp);
+    if(d.swap.total>0){const sp=Math.round(d.swap.used/d.swap.total*100);document.getElementById('swap-val').textContent=`${d.swap.usedGB}/${d.swap.totalGB}GB (${sp}%)`;setBar('swap-bar',sp);}
+    else document.getElementById('swap-val').textContent='Inaktiv';
+    document.getElementById('load-val').textContent=d.load.join(' / ');
+    document.getElementById('uptime-val').textContent=d.uptime;
+    document.getElementById('hostname-val').textContent=d.hostname;
+    document.getElementById('ip-val').textContent=d.ip;
+    document.getElementById('temp-val').textContent=d.temp||'N/A';
+    document.getElementById('proc-val').textContent=d.processes;
+    document.getElementById('dash-url').textContent=`https://${d.ip}:8443`;
+    document.getElementById('last-update').textContent=new Date().toLocaleTimeString('de-DE');
+    const de=document.getElementById('disk-content');de.innerHTML='';
+    d.disks.forEach(disk=>{
+      const pct=disk.percent;
+      const div=document.createElement('div');div.className='disk-i';
+      div.innerHTML=`<div class="disk-p"><span>${disk.mount}</span><span>${disk.usedGB}/${disk.totalGB}GB (${pct}%)</span></div><div class="bar" style="margin-top:3px"><div class="bar-fill ${pct>85?'r':pct>60?'y':'g'}" style="width:${pct}%"></div></div>`;
+      de.appendChild(div);
+    });
+  }catch(e){console.error(e);}
+}
+loadStats();setInterval(loadStats,5000);
+
+// ─── TASMOTA WIDGET ───────────────────────────────────────
+let devices=[];
+
+async function tasmotaCmd(ip,command,value){
+  const body={ip,command};if(value!==undefined)body.value=value;
+  return fetch('/api/tasmota/cmd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+}
+
+async function loadDevices(){
+  const data=await fetch('/api/tasmota/devices').then(r=>r.json());
+  devices=data.devices||[];
+  document.getElementById('tas-count').textContent=devices.length+' Geräte';
+  await renderDeviceWidget();
+}
+
+async function renderDeviceWidget(){
+  const list=document.getElementById('device-list');
+  if(devices.length===0){list.innerHTML='<div class="empty-hint">Geräte über ⚙️ hinzufügen</div>';return;}
+  const statuses=await Promise.allSettled(devices.map(async dev=>{
+    const ch=dev.channels||1;const states=[];
+    for(let i=1;i<=ch;i++){
+      try{const r=await tasmotaCmd(dev.ip,ch>1?`Power${i}`:'Power');states.push(r[ch>1?`POWER${i}`:'POWER']==='ON');}
+      catch{states.push(null);}
+    }
+    return{id:dev.id,states,online:true};
+  }));
+  list.innerHTML='';
+  devices.forEach((dev,idx)=>{
+    const s=statuses[idx];
+    const online=s.status==='fulfilled'&&s.value.online;
+    const states=online?s.value.states:[];
+    const ch=dev.channels||1;
+    let chHtml='';
+    for(let i=0;i<ch;i++){
+      const on=states[i]===true;
+      chHtml+=`<div class="tas-ch"><span class="tas-chl">${ch>1?'Kanal '+(i+1):dev.name}</span>
+      <label class="toggle"><input type="checkbox" ${on?'checked':''} ${!online?'disabled':''}
+        onchange="togglePwr('${dev.ip}',${i+1},${ch},this)"><span class="slider"></span></label></div>`;
+    }
+    const el=document.createElement('div');el.className='tas-dev';
+    el.innerHTML=`<div class="tas-hdr"><div><div class="tas-name">${dev.name} ${online?'<span style="color:#3fb950;font-size:10px">●</span>':'<span class="tas-offline">● Offline</span>'}</div><div class="tas-ip">${dev.ip}</div></div></div><div class="tas-chs">${chHtml}</div>`;
+    list.appendChild(el);
+  });
+}
+
+async function togglePwr(ip,ch,total,checkbox){
+  const val=checkbox.checked?'ON':'OFF';
+  const cmd=total>1?`Power${ch}`:'Power';
+  try{await tasmotaCmd(ip,cmd,val);}
+  catch(e){checkbox.checked=!checkbox.checked;}
+}
+
+loadDevices();setInterval(loadDevices,15000);
+
+// ─── SETTINGS MODAL ───────────────────────────────────────
+function openSettings(){
+  document.getElementById('overlay').classList.add('open');
+  renderManageList();
+}
+function closeSettings(){document.getElementById('overlay').classList.remove('open');}
+function overlayClick(e){if(e.target===document.getElementById('overlay'))closeSettings();}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  event.target.classList.add('active');
+  if(name==='devices') renderManageList();
+  if(name==='layout')  renderLayoutTab();
+  if(name==='newsconfig') loadAndRenderNewsSettings();
+}
+
+// ── News Config ───────────────────────────────────────────
+let newsConfigCache = [];
+
+async function loadAndRenderNewsSettings() {
+  try {
+    const res = await fetch('/api/news/config');
+    newsConfigCache = await res.json();
+    renderNewsManageList();
+  } catch(e) { console.error('Error loading news config', e); }
+}
+
+function renderNewsManageList() {
+  const list = document.getElementById('news-manage-list');
+  if (newsConfigCache.length === 0) {
+    list.innerHTML = '<div class="empty-hint">Keine Feeds konfiguriert.</div>';
+    return;
+  }
+  let h = '';
+  newsConfigCache.forEach((f, i) => {
+    h += `<div class="dev-item">
+      <div class="dev-item-info">
+        <div class="dev-item-name">${f.source}</div>
+        <div class="dev-item-ip" style="word-break:break-all;">${f.url}</div>
+      </div>
+      <button class="dev-item-del" onclick="deleteNewsFeed(${i})">Löschen</button>
+    </div>`;
+  });
+  list.innerHTML = h;
+}
+
+async function addNewsFeed() {
+  const n = document.getElementById('news-name').value.trim();
+  const u = document.getElementById('news-url').value.trim();
+  if (!n || !u) { alert('Name und URL erforderlich.'); return; }
+  newsConfigCache.push({ source: n, url: u });
+  await saveNewsSettings();
+  document.getElementById('news-name').value = '';
+  document.getElementById('news-url').value = '';
+}
+
+async function deleteNewsFeed(i) {
+  if(!confirm('Diesen Feed entfernen?')) return;
+  newsConfigCache.splice(i, 1);
+  await saveNewsSettings();
+}
+
+async function saveNewsSettings() {
+  try {
+    await fetch('/api/news/config', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(newsConfigCache)
+    });
+    renderNewsManageList();
+    loadNews(); // Refresh dashboard news immediately
+  } catch(e) { alert('Fehler beim Speichern'); }
+}
+
+// ── SCAN ───────────────────────────────────────────────
+let scanFoundIds=new Set();
+
+function startScan(){
+  const btn=document.getElementById('scan-btn');
+  const status=document.getElementById('scan-status');
+  const results=document.getElementById('scan-results');
+  btn.disabled=true;btn.textContent='⏳ Scanne...';
+  status.textContent='';results.innerHTML='';
+  scanFoundIds.clear();
+
+  const evtSrc=new EventSource('/api/scan');
+  let found=0;
+
+  evtSrc.onmessage=e=>{
+    const data=JSON.parse(e.data);
+    if(data.scanning){status.textContent=`Scanne ${data.scanning}...`;}
+    if(data.found){
+      found++;
+      const dev=data.found;
+      const alreadySaved=devices.some(d=>d.ip===dev.ip);
+      const item=document.createElement('div');item.className='sr-item';
+      item.innerHTML=`<div class="sr-info"><div class="sr-name">${dev.name}</div><div class="sr-ip">${dev.ip}</div></div>
+        <button class="sr-add" id="sr-${dev.ip.replace(/\./g,'_')}" ${alreadySaved?'disabled':''} onclick="addFromScan('${dev.ip}','${dev.name.replace(/'/g,"\\'")}',this)">
+          ${alreadySaved?'✓ Vorhanden':'+ Hinzufügen'}</button>`;
+      results.appendChild(item);
+    }
+    if(data.done){
+      evtSrc.close();
+      btn.disabled=false;btn.textContent='🔍 Netzwerk scannen (192.168.x.0/24)';
+      status.textContent=found>0?`✅ ${found} Tasmota-Gerät${found!==1?'e':''} gefunden`:'Keine Tasmota-Geräte gefunden.';
+    }
+    if(data.error){
+      evtSrc.close();
+      btn.disabled=false;btn.textContent='🔍 Netzwerk scannen';
+      status.textContent='Fehler: '+data.error;
+    }
+  };
+  evtSrc.onerror=()=>{
+    evtSrc.close();
+    btn.disabled=false;btn.textContent='🔍 Netzwerk scannen';
+    status.textContent='Verbindungsfehler.';
+  };
+}
+
+async function addFromScan(ip,name,btn){
+  btn.disabled=true;btn.textContent='⏳';
+  await fetch('/api/tasmota/devices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,ip,channels:1})});
+  btn.textContent='✓ Hinzugefügt';
+  await loadDevices();
+}
+
+// ── MANUAL ADD ─────────────────────────────────────────
+async function manualAdd(){
+  const name=document.getElementById('f-name').value.trim();
+  const ip=document.getElementById('f-ip').value.trim();
+  const channels=parseInt(document.getElementById('f-ch').value)||1;
+  const user=document.getElementById('f-user').value.trim();
+  const pass=document.getElementById('f-pass').value;
+  if(!name||!ip){alert('Name und IP sind Pflichtfelder!');return;}
+  await fetch('/api/tasmota/devices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,ip,channels,user,pass})});
+  document.getElementById('f-name').value='';
+  document.getElementById('f-ip').value='';
+  document.getElementById('f-ch').value='1';
+  document.getElementById('f-user').value='';
+  document.getElementById('f-pass').value='';
+  await loadDevices();
+  switchTab('devices');
+  document.querySelectorAll('.tab').forEach((t,i)=>{if(i===2)t.classList.add('active');else t.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-devices').classList.add('active');
+}
+
+// ── MANAGE DEVICES ─────────────────────────────────────
+function renderManageList(){
+  const list=document.getElementById('devices-manage-list');
+  if(devices.length===0){list.innerHTML='<div style="color:#7d8590;font-size:12px">Noch keine Geräte konfiguriert.</div>';return;}
+  list.innerHTML='';
+  devices.forEach(dev=>{
+    const el=document.createElement('div');el.className='dev-item';
+    el.innerHTML=`<div class="dev-item-info"><div class="dev-item-name">${dev.name}</div><div class="dev-item-ip">${dev.ip} · ${dev.channels||1} Kanal${(dev.channels||1)>1?'e':''}</div></div>
+      <button class="btn-del" onclick="removeDevice('${dev.id}',this)">🗑 Entfernen</button>`;
+    list.appendChild(el);
+  });
+}
+
+async function removeDevice(id,btn){
+  if(!confirm('Gerät wirklich entfernen?'))return;
+  btn.disabled=true;btn.textContent='...';
+  await fetch('/api/tasmota/devices/'+id,{method:'DELETE'});
+  await loadDevices();
+  renderManageList();
+}
+</script>
+<script>
+async function loadNeoStatus(){
+  try{
+    const d=await fetch('/api/ocstatus').then(r=>r.json());
+    if(d.error){document.getElementById('oc-model').textContent='Fehler';return;}
+    document.getElementById('oc-model').textContent=d.model;
+    document.getElementById('oc-in').textContent=d.tokensIn;
+    document.getElementById('oc-out').textContent=d.tokensOut;
+    document.getElementById('oc-cache').textContent=d.cacheRead;
+    document.getElementById('oc-cost').textContent=d.cost;
+    document.getElementById('oc-ctx').textContent=d.totalTokens+' / '+d.contextMax+' ('+d.contextPct+'%)';
+    const bar=document.getElementById('oc-ctx-bar');
+    bar.style.width=d.contextPct+'%';
+    bar.className='bar-fill '+(d.contextPct>85?'r':d.contextPct>60?'y':'g');
+    if(d.updatedAt){
+      const t=new Date(d.updatedAt);
+      document.getElementById('oc-updated').textContent='Stand: '+t.toLocaleTimeString('de-DE');
+    }
+  }catch(e){console.error('Neo status error',e);}
+}
+loadNeoStatus();
+setInterval(loadNeoStatus,30000);
+</script>
+<div id="cal-overlay" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:110;align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;width:300px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <h3 style="color:#e6edf3;font-size:14px;margin-bottom:10px;">Neuer Termin</h3>
+    <input type="text" id="cal-title" placeholder="Titel (z.B. Urlaub)" style="padding:8px;background:#0d1117;border:1px solid #30363d;color:#fff;border-radius:6px;outline:none;">
+    <input type="date" id="cal-date" style="padding:8px;background:#0d1117;border:1px solid #30363d;color:#fff;border-radius:6px;outline:none;">
+    <select id="cal-color" style="padding:8px;background:#0d1117;border:1px solid #30363d;color:#fff;border-radius:6px;outline:none;">
+      <option value="#58a6ff">Blau</option>
+      <option value="#3fb950">Grün</option>
+      <option value="#d29922">Gelb</option>
+      <option value="#f85149">Rot</option>
+      <option value="#a371f7">Lila</option>
+    </select>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+      <button onclick="document.getElementById('cal-overlay').style.display='none'" style="padding:6px 12px;border:none;background:#21262d;color:#8b949e;border-radius:6px;cursor:pointer;">Abbrechen</button>
+      <button onclick="saveCalEvent()" style="padding:6px 12px;border:none;background:#238636;color:#fff;border-radius:6px;cursor:pointer;">Speichern</button>
+    </div>
+  </div>
+</div>
+<script>
+async function loadCalendar() {
+  try {
+    const events = await fetch('/api/calendar').then(r=>r.json());
+    events.sort((a,b) => a.date.localeCompare(b.date));
+    const list = document.getElementById('calendar-list');
+    list.innerHTML = '';
+    if(events.length === 0) { list.innerHTML = '<div style="color:#7d8590;font-size:12px;text-align:center;margin-top:10px;">Keine Termine</div>'; return; }
+    events.forEach(ev => {
+      const el = document.createElement('div');
+      el.style.cssText = `display:flex;align-items:center;background:#0d1117;border-left:4px solid ${ev.color};padding:8px;border-radius:6px;`;
+      const dateParts = ev.date.split('-');
+      const fmtDate = `${dateParts[2]}.${dateParts[1]}.`;
+      el.innerHTML = `
+        <div style="width:40px;color:#8b949e;font-size:11px;font-weight:600;">${fmtDate}</div>
+        <div style="flex:1;font-size:13px;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.title}</div>
+        <button onclick="deleteCalEvent('${ev.id}')" style="background:none;border:none;color:#f85149;cursor:pointer;font-size:14px;opacity:0.7;padding:0 5px;">✕</button>
+      `;
+      list.appendChild(el);
+    });
+  } catch(e) { console.error(e); }
+}
+
+function openCalModal() {
+  document.getElementById('cal-title').value = '';
+  document.getElementById('cal-date').value = '';
+  document.getElementById('cal-overlay').style.display = 'flex';
+}
+
+async function saveCalEvent() {
+  const title = document.getElementById('cal-title').value.trim();
+  const date = document.getElementById('cal-date').value;
+  const color = document.getElementById('cal-color').value;
+  if(!title || !date) return alert('Bitte Titel und Datum eingeben!');
+  await fetch('/api/calendar', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title,date,color}) });
+  document.getElementById('cal-overlay').style.display = 'none';
+  loadCalendar();
+}
+
+async function deleteCalEvent(id) {
+  if(!confirm('Termin wirklich löschen?')) return;
+  await fetch('/api/calendar/'+id, { method:'DELETE' });
+  loadCalendar();
+}
+
+loadCalendar();
+setInterval(loadCalendar, 60000);
+</script>
+<script>
+// ── POST-IT LOGIC ──
+document.addEventListener('DOMContentLoaded', () => {
+  const textarea = document.getElementById('postit-text');
+  const storageKey = 'neo_dashboard_postit';
+  const savedText = localStorage.getItem(storageKey);
+  if (savedText) textarea.value = savedText;
+  let timeout = null;
+  textarea.addEventListener('input', () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      localStorage.setItem(storageKey, textarea.value);
+    }, 500);
+  });
+});
+</script>
+<script>
+// ── NEWS LOGIC ──
+async function loadNews() {
+  try {
+    const news = await fetch('/api/news').then(r => r.json());
+    if (!news || !news.length) return;
+    
+    // Format relative time (e.g., "vor 10 Min")
+    const timeAgo = (ts) => {
+      const diff = Math.floor((Date.now() - ts) / 60000);
+      if (diff < 60) return `vor ${diff} Min`;
+      const hrs = Math.floor(diff / 60);
+      if (hrs < 24) return `vor ${hrs} Std`;
+      return `vor ${Math.floor(hrs / 24)} Tg`;
+    };
+
+    const buildHTML = (items) => items.map((n, i) => {
+      // Speichere die Daten für das Modal sicher als Data-Attribute
+      const safeTitle = n.title.replace(/"/g, '&quot;');
+      const safeSnippet = (n.snippet || 'Keine Vorschau verfügbar.').replace(/"/g, '&quot;');
+      return `
+      <div class="news-item" style="cursor:pointer;" onclick="openNewsModal('${n.source}', '${timeAgo(n.date)}', '${safeTitle}', '${safeSnippet}', '${n.link}')">
+        <div class="news-source"><span>${n.source}</span><span class="time">${timeAgo(n.date)}</span></div>
+        <div class="news-headline">${n.title}</div>
+      </div>
+      `;
+    }).join('');
+
+    // Duplicate for infinite scroll
+    const innerHTML = buildHTML(news) + buildHTML(news);
+    const track = document.getElementById('news-track');
+    if (track) track.innerHTML = innerHTML;
+  } catch (e) {
+    console.warn('Fehler beim News-Laden', e);
+  }
+}
+
+function openNewsModal(source, time, title, snippet, link) {
+  document.getElementById('news-modal-source').textContent = source;
+  document.getElementById('news-modal-time').textContent = time;
+  document.getElementById('news-modal-title').textContent = title;
+  document.getElementById('news-modal-snippet').textContent = snippet;
+  document.getElementById('news-modal-link').href = link;
+  document.getElementById('news-overlay').style.display = 'flex';
+}
+
+loadNews();
+setInterval(loadNews, 15 * 60000); // alle 15 Min
+</script>
+<script src="sortable.min.js"></script>
+<script src="layout.js"></script>
+</body>
+</html>
