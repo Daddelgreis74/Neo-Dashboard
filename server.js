@@ -339,8 +339,49 @@ async function handleRequest(req, res) {
   }
 
   if (pathname === '/api/abfall' && req.method === 'GET') {
+    if (!fs.existsSync(ICS_PATH)) {
+      res.writeHead(200, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ error: 'NO_FILE' }));
+      return;
+    }
     res.writeHead(200, {'Content-Type':'application/json'});
     res.end(JSON.stringify(parseICS())); return;
+  }
+
+  // --- ICS UPLOAD ---
+  if (pathname === '/api/upload-ics' && req.method === 'POST') {
+    let body = Buffer.alloc(0);
+    req.on('data', chunk => { body = Buffer.concat([body, chunk]); });
+    req.on('end', () => {
+      // Basic multipart/form-data parsing
+      const dataStr = body.toString('binary');
+      const boundaryMatch = dataStr.match(/--[^\r\n]+/);
+      if (!boundaryMatch) {
+         res.writeHead(400); res.end('Invalid upload format'); return;
+      }
+      const boundary = boundaryMatch[0];
+      const parts = dataStr.split(boundary);
+      let fileData = null;
+      
+      for (let p of parts) {
+        if (p.includes('filename=')) {
+           const headerEnd = p.indexOf('\r\n\r\n');
+           if (headerEnd !== -1) {
+             fileData = p.substring(headerEnd + 4, p.length - 2); 
+             break;
+           }
+        }
+      }
+
+      if (fileData) {
+        fs.writeFileSync(ICS_PATH, fileData, 'binary');
+        res.writeHead(200, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({ ok: true }));
+      } else {
+        res.writeHead(400); res.end('No file found');
+      }
+    });
+    return;
   }
 
   if (pathname === '/api/layout' && req.method === 'GET') {

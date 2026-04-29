@@ -481,10 +481,31 @@ const ABFALL_ICONS = {
 
 async function loadAbfall() {
   try {
-    abfallEvents = await fetch('/api/abfall').then(r=>r.json());
+    const res = await fetch('/api/abfall');
+    const data = await res.json();
+    if (data.error === 'NO_FILE') {
+       document.getElementById('cal-month').innerHTML = '<div style="font-size:12px;color:#f85149;margin-bottom:10px;">Keine ICS-Datei gefunden</div><button onclick="document.getElementById(\'ics-upload\').click()" style="background:#238636;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">ICS hochladen</button><input type="file" id="ics-upload" accept=".ics" style="display:none" onchange="uploadICS(event)">';
+       document.getElementById('cal-grid').innerHTML = '';
+       document.getElementById('ab-next').innerHTML = '';
+       return;
+    }
+    abfallEvents = data;
     buildAbfallCalendar();
     buildNextAbfall();
   } catch(e) { console.error('Abfall error', e); }
+}
+
+async function uploadICS(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('ics', file);
+  try {
+    await fetch('/api/upload-ics', { method: 'POST', body: formData });
+    loadAbfall();
+  } catch(e) {
+    alert('Upload fehlgeschlagen');
+  }
 }
 
 function buildNextAbfall() {
