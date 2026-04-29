@@ -12,7 +12,7 @@ Keine externen Frameworks, keine Datenbank.
 * **Abfallkalender:** Liest `.ics` Dateien aus und zeigt die nächste Abholung.
 * **Termine:** Mini-Kalender für eigene Notizen.
 * **Wetter:** 3-Tage Vorschau für deinen Ort (wttr.in).
-* **Benzinpreise:** Tankstellen in der Nähe via Tankerkönig-API.
+* **Benzinpreise:** Tankstellen in der Nähe via Web-Scraper (ich-tanke.de).
 * **News-Ticker:** RSS-Feeds in einem Laufband.
 * **Layout:** Widgets können per Drag & Drop verschoben und ein/ausgeblendet werden.
 
