@@ -4,7 +4,7 @@ Ein extrem leichtgewichtiges, lokales Dashboard für das Heimnetzwerk.
 Komplett geschrieben in Vanilla JavaScript und Node.js. 
 Keine externen Frameworks, keine Datenbank.
 
-![Dashboard Preview](https://via.placeholder.com/800x400?text=Dashboard+Preview) <!-- Optional: Hier später ein Screenshot-Link -->
+![Dashboard Preview](preview.png)
 
 ## Features
 * **Tasmota Steuerung:** Smart-Home Steckdosen und Lichter im lokalen Netz finden und schalten.
