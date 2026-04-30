@@ -56,6 +56,43 @@ node server.js
 Anschließend ist das Dashboard im Browser unter `https://<IP-DEINES-SERVERS>:8443` erreichbar.
 *(Da es ein selbstsigniertes Zertifikat ist, musst du im Browser beim ersten Mal auf "Erweitert -> Risiko akzeptieren" klicken).*
 
+### 6. Autostart einrichten (systemd / Linux)
+Damit das Dashboard auch nach einem Server-Neustart automatisch im Hintergrund weiterläuft, empfiehlt sich ein `systemd`-Dienst.
+
+Erstelle eine neue Service-Datei:
+```bash
+sudo nano /etc/systemd/system/neo-dashboard.service
+```
+
+Füge folgenden Inhalt ein (Passe den Pfad `WorkingDirectory` und deinen Linux-Benutzernamen `User` entsprechend an):
+```ini
+[Unit]
+Description=Neo Dashboard Service
+After=network.target
+
+[Service]
+Type=simple
+User=DEIN_LINUX_BENUTZERNAME
+WorkingDirectory=/pfad/zu/deinem/dashboard
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Speichere die Datei und aktiviere den Dienst mit folgenden Befehlen:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable neo-dashboard
+sudo systemctl start neo-dashboard
+```
+
+Den Status kannst du jederzeit so prüfen:
+```bash
+sudo systemctl status neo-dashboard
+```
+
 ---
 **Daten & Speicherung:** 
 Alle Einstellungen (Layout, gefundene Tasmota-Geräte, News-Feeds) werden lokal in kleinen JSON-Dateien im gleichen Verzeichnis gespeichert (`layout.json`, `tasmota.json` etc.).
