@@ -19,7 +19,8 @@ Keine externen Frameworks, keine Datenbank.
 ## Setup & Installation
 
 ### 1. Voraussetzungen
-* [Node.js](https://nodejs.org/) installiert
+* **Node.js** installiert 
+  *(Unter Linux / Raspberry Pi schnell installiert via Terminal: `sudo apt update && sudo apt install nodejs npm -y`)*
 * SSL-Zertifikate (für HTTPS Zugriff)
 
 ### 2. Projekt klonen & Abhängigkeiten installieren
